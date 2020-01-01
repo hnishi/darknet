@@ -87,6 +87,15 @@ box get_yolo_box(float *x, float *biases, int n, int index, int i, int j, int lw
     b.y = (j + x[index + 1*stride]) / lh;
     b.w = exp(x[index + 2*stride]) * biases[2*n]   / w;
     b.h = exp(x[index + 3*stride]) * biases[2*n+1] / h;
+    printf("lw, lh, w, h = %d, %d, %d, %d\n", lw, lh, w, h);
+    printf("x = %f, %f, %f, %f\n",
+            x[index + 0*stride],
+            x[index + 1*stride],
+            x[index + 2*stride],
+            x[index + 3*stride]
+            );
+    printf("biases = %f, %f\n", biases[2*n], biases[2*n+1]);
+    printf("box: x, y, w, h = %f, %f, %f, %f\n", b.x, b.y, b.w, b.h);
     return b;
 }
 
@@ -258,8 +267,8 @@ void correct_yolo_boxes(detection *dets, int n, int w, int h, int netw, int neth
     }
     for (i = 0; i < n; ++i){
         box b = dets[i].bbox;
-        b.x =  (b.x - (netw - new_w)/2./netw) / ((float)new_w/netw); 
-        b.y =  (b.y - (neth - new_h)/2./neth) / ((float)new_h/neth); 
+        b.x =  (b.x - (netw - new_w)/2./netw) / ((float)new_w/netw);
+        b.y =  (b.y - (neth - new_h)/2./neth) / ((float)new_h/neth);
         b.w *= (float)netw/new_w;
         b.h *= (float)neth/new_h;
         if(!relative){
@@ -326,6 +335,7 @@ int get_yolo_detections(layer l, int w, int h, int netw, int neth, float thresh,
             int obj_index  = entry_index(l, 0, n*l.w*l.h + i, 4);
             float objectness = predictions[obj_index];
             if(objectness <= thresh) continue;
+            printf("score, thresh = %f, %f\n", objectness, thresh);
             int box_index  = entry_index(l, 0, n*l.w*l.h + i, 0);
             dets[count].bbox = get_yolo_box(predictions, l.biases, l.mask[n], box_index, col, row, l.w, l.h, netw, neth, l.w*l.h);
             dets[count].objectness = objectness;
