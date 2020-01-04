@@ -598,11 +598,19 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         printf("%s: Predicted in %f seconds.\n", input, what_time_is_it_now()-time);
         int nboxes = 0;
         detection *dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes);
-        //printf("%d\n", nboxes);
+        printf("dets0: x, y, w, h = %f, %f, %f, %f\n",
+                dets->bbox.x, dets->bbox.y, dets->bbox.w, dets->bbox.h);
+        printf("nboxes %d\n", nboxes);
         //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
         if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
+        printf("dets1: x, y, w, h = %f, %f, %f, %f\n",
+                dets->bbox.x, dets->bbox.y, dets->bbox.w, dets->bbox.h);
         draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);
+        printf("dets2: x, y, w, h = %f, %f, %f, %f\n",
+                dets->bbox.x, dets->bbox.y, dets->bbox.w, dets->bbox.h);
         free_detections(dets, nboxes);
+        printf("dets3: x, y, w, h = %f, %f, %f, %f\n",
+                dets->bbox.x, dets->bbox.y, dets->bbox.w, dets->bbox.h);
         if(outfile){
             save_image(im, outfile);
         }

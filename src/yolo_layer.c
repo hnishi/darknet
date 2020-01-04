@@ -87,7 +87,17 @@ box get_yolo_box(float *x, float *biases, int n, int index, int i, int j, int lw
     b.y = (j + x[index + 1*stride]) / lh;
     b.w = exp(x[index + 2*stride]) * biases[2*n]   / w;
     b.h = exp(x[index + 3*stride]) * biases[2*n+1] / h;
+    //(void)printf("size of l.output %lu\n", sizeof(x) );    // 配列のサイズ
+    //(void)printf("size of components %lu\n", ( sizeof(x) / sizeof(float) ) );    // 配列の要素数
     printf("lw, lh, w, h = %d, %d, %d, %d\n", lw, lh, w, h);
+    printf("stride = %d\n", stride),
+    printf("index, x_index = %d, %d, %d, %d, %d\n",
+            index,
+            index + 0*stride,
+            index + 1*stride,
+            index + 2*stride,
+            index + 3*stride
+            );
     printf("x = %f, %f, %f, %f\n",
             x[index + 0*stride],
             x[index + 1*stride],
@@ -277,6 +287,7 @@ void correct_yolo_boxes(detection *dets, int n, int w, int h, int netw, int neth
             b.y *= h;
             b.h *= h;
         }
+        printf("corrected box: x, y, w, h = %f, %f, %f, %f\n", b.x, b.y, b.w, b.h);
         dets[i].bbox = b;
     }
 }
@@ -324,6 +335,7 @@ void avg_flipped_yolo(layer l)
 
 int get_yolo_detections(layer l, int w, int h, int netw, int neth, float thresh, int *map, int relative, detection *dets)
 {
+    printf("l.classes, l.indexes = %d, %d\n", l.classes, l.indexes );
     int i,j,n;
     float *predictions = l.output;
     if (l.batch == 2) avg_flipped_yolo(l);
@@ -336,6 +348,9 @@ int get_yolo_detections(layer l, int w, int h, int netw, int neth, float thresh,
             float objectness = predictions[obj_index];
             if(objectness <= thresh) continue;
             printf("score, thresh = %f, %f\n", objectness, thresh);
+            //printf("sizeof l.output = %lu\n", sizeof(predictions));
+            //(void)printf("size of l.output %lu\n", sizeof(&predictions) );    // 配列のサイズ
+            //(void)printf("size of components %lu\n", ( sizeof(&predictions) / sizeof(float) ) );    // 配列の要素数
             int box_index  = entry_index(l, 0, n*l.w*l.h + i, 0);
             dets[count].bbox = get_yolo_box(predictions, l.biases, l.mask[n], box_index, col, row, l.w, l.h, netw, neth, l.w*l.h);
             dets[count].objectness = objectness;
